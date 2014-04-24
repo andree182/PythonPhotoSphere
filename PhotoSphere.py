@@ -157,6 +157,7 @@ def qtmain():
 
         def __init__(self):
             super(Example, self).__init__()
+            self.setWindowFlags(QtCore.Qt.Dialog)
 
             self.initUI()
 
@@ -173,7 +174,7 @@ def qtmain():
             self.fdBtn.move(280, 20)
             self.fdBtn.clicked.connect(self.chooseFile)
 
-            self.setGeometry(300, 300, 390, 150)
+            self.setGeometry(100, 100, 390, 60)
             self.setWindowTitle('Input dialog')
             self.show()
 
