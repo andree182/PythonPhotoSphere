@@ -196,25 +196,3 @@ if __name__ == '__main__':
     # Your code that must run when the application closes goes here
     main()
     sys.exit(ret)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    print "Hit ESC key to quit."
-    main()
-
