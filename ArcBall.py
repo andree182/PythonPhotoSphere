@@ -23,7 +23,7 @@ Second transform
  [ 0.          0.          0.          1.00000001]]
 """
 
-import numpy 
+import numpy
 import numpy.oldnumeric as Numeric
 import copy
 from math import sqrt
@@ -69,7 +69,7 @@ class ArcBallT:
         TempPt [X] = (NewPt [X] * self.m_AdjustWidth) - 1.0
         TempPt [Y] = 1.0 - (NewPt [Y] * self.m_AdjustHeight)
         # //Compute the square of the length of the vector to the point from the center
-        
+ 
         length = Numeric.sum (Numeric.dot (TempPt, TempPt))
         # //If the point is mapped outside of the sphere... (length > radius squared)
         if (length > 1.0):
@@ -99,10 +99,10 @@ class ArcBallT:
 
     def zoom(self, vecNewPoint):
         fZoomAmt = (vecNewPoint[1] - self.m_vecStartPoint[1]) / 200.0
-        
-        
+
+
         return fZoomAmt
-        
+
         pass
 
     def drag (self, NewPt):
@@ -132,7 +132,7 @@ class ArcBallT:
         else:        #                            //if its zero
             # //The begin and end vectors coincide, so return a quaternion of zero matrix (no rotation)
             NewRot[X] = NewRot[Y] = NewRot[Z] = NewRot[W] = 0.0;
-            
+
         return NewRot
 
 
@@ -177,7 +177,7 @@ def Vector3fLength (u):
     mag_squared = Numeric.sum(Numeric.dot (u,u))
     mag = sqrt (mag_squared)
     return mag
-    
+
 def Matrix3fSetIdentity ():
     return Numeric.identity (3, 'f')
 
@@ -191,14 +191,14 @@ def Matrix4fSVD (NewObj):
     X = 0
     Y = 1
     Z = 2
-    s = sqrt ( 
+    s = sqrt (
         ( (NewObj [X][X] * NewObj [X][X]) + (NewObj [X][Y] * NewObj [X][Y]) + (NewObj [X][Z] * NewObj [X][Z]) +
         (NewObj [Y][X] * NewObj [Y][X]) + (NewObj [Y][Y] * NewObj [Y][Y]) + (NewObj [Y][Z] * NewObj [Y][Z]) +
         (NewObj [Z][X] * NewObj [Z][X]) + (NewObj [Z][Y] * NewObj [Z][Y]) + (NewObj [Z][Z] * NewObj [Z][Z]) ) / 3.0 )
     return s
 
 def Matrix4fSetRotationScaleFromMatrix3f(NewObj, three_by_three_matrix):
-    # Modifies NewObj in-place by replacing its upper 3x3 portion from the 
+    # Modifies NewObj in-place by replacing its upper 3x3 portion from the
     # passed in 3x3 matrix.
     # NewObj = Matrix4fT ()
     NewObj [0:3,0:3] = three_by_three_matrix
@@ -222,7 +222,7 @@ def Matrix4fSetRotationFromMatrix3f (NewObj, three_by_three_matrix):
     return scaled_NewObj
 
 def Matrix3fSetRotationFromQuat4f (q1):
-    # Converts the H quaternion q1 into a new equivalent 3x3 rotation matrix. 
+    # Converts the H quaternion q1 into a new equivalent 3x3 rotation matrix.
     X = 0
     Y = 1
     Z = 2
@@ -252,37 +252,37 @@ def getScalingV(vecScale):
     Y = 1
     Z = 2
     W = 3
-    
+
     matScale = Matrix4fT()
     matScale[X][X] = vecScale[X]
     matScale[Y][Y] = vecScale[Y]
     matScale[Z][Z] = vecScale[Z]
     matScale[W][W] = 1
 
-    return matScale    
-    
+    return matScale
+
 def getScalingF(fScale):
     X = 0
     Y = 1
     Z = 2
     W = 3
-    
+
     matScale = Matrix4fT()
     matScale[X][X] = fScale
     matScale[Y][Y] = fScale
     matScale[Z][Z] = fScale
     matScale[W][W] = 1
 
-    return matScale      
+    return matScale
 
 def scaleWithVector(matMatrix, vecScale):
     matScale = getScalingV(vecScale)
     matResult = Matrix3fMulMatrix3f(matMatrix, matScale)
     return matResult
-    
+
 def scaleWithMatrix(matMatrix, matScale):
     matResult = Matrix3fMulMatrix3f(matMatrix, matScale)
-    return matResult    
+    return matResult
 
 def unit_test_ArcBall_module ():
     # Unit testing of the ArcBall calss and the real math behind it.
