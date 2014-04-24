@@ -22,10 +22,13 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import sys
+import os
 
 from PhotoSphereRenderer import *        # Draw (), Initialize () and all the real OpenGL work.
 from ArcBall import *        # // *NEW* ArcBall header
 from PyQt4 import QtGui, QtCore
+
+from traceback import print_exc
 
 # *********************** Globals ***********************
 # Python 2.2 defines these directly
@@ -131,7 +134,11 @@ def main():
     # tying in a rendering context, so we are ready to start making immediate mode
     # GL calls.
     # Call to perform inital GL setup (the clear colors, enabling modes
-    Initialize (640, 480, fileUrl)
+    try:
+        Initialize (640, 480, fileUrl)
+    except:
+        print_exc()
+        sys.exit()
 
     # Start Event Processing Engine
     glutMainLoop()
@@ -192,7 +199,12 @@ def qtmain():
 
 
 if __name__ == '__main__':
-    ret = qtmain()
-    # Your code that must run when the application closes goes here
-    main()
+    if len(sys.argv) and os.path.isfile(sys.argv[1]):
+        fileUrl = "file://{0}".format(os.path.abspath(sys.argv[1]))
+        main()
+        ret = 0
+    else:
+        ret = qtmain()
+        # Your code that must run when the application closes goes here
+        main()
     sys.exit(ret)

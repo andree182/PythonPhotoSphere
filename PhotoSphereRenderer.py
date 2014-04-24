@@ -2,6 +2,7 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import os
 import sys
 import copy
 from math import cos, sin
@@ -68,14 +69,16 @@ g_texData = 0
 g_pctOffset=0.15
 
 
-def loadImage( imageName = "/local/photo/SR71.jpg" ): # "/local/photo/montagna.jpg" ):
+def loadImage(imageName):
     global g_texWidth
     global g_texHeight
     global g_texData
 
 
-
-    file = cStringIO.StringIO(urllib.urlopen(imageName).read())
+    if os.path.isfile(imageName):
+        file = "file://{0}".format(os.path.abspath(imageName))
+    else:
+        file = cStringIO.StringIO(urllib.urlopen(imageName).read())
     im = Image.open(file)
     #im = Image.open(imageName)
 #    try:
