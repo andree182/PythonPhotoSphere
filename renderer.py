@@ -36,8 +36,8 @@ class Renderer(object):
     def __init__(self, width, height):
         self.size(width, height)
         self.initialized = False
-        self.rot = drug(x = 90, z = 0)
-        self.rotation = RotationMatrix().rotateX(90)
+        self.rot = drug(x = pi * 0.5, z = 0)
+        self.rotation = RotationMatrix().rotateXYZ(self.rot.x, 0, self.rot.z)
         self.transform = self.rotation.copy().addDimension(1)
         v = Vector(width * 0.5, height * 0.5, 0)
         self.mouse = dict(
@@ -160,14 +160,17 @@ class Renderer(object):
 
     def onDrag(self, cursor_x, cursor_y):
         if self.mouse['left'].pressed:
-            self.rot.x += 0.002 * pi * (self.mouse['left'].pos.y - cursor_y)
+            self.rot.x += 0.001 * pi * (self.mouse['left'].pos.y - cursor_y)
             self.rot.z += 0.002 * pi * (cursor_x - self.mouse['left'].pos.x)
             self.mouse['left'].pos.set(cursor_x, cursor_y, 0)
-        if self.rot.x < 0:   self.rot.x += pi2
-        if self.rot.z < 0:   self.rot.z += pi2
-        if self.rot.x > pi2: self.rot.x -= pi2
-        if self.rot.z > pi2: self.rot.z -= pi2
+        # bounderies
+        if    self.rot.x < 0:   self.rot.x  = 0
+        if    self.rot.x > pi:  self.rot.x  = pi
+        while self.rot.z < 0:   self.rot.z += pi2
+        while self.rot.z > pi2: self.rot.z -= pi2
+        # calculate
         self.rotation.reset().rotateXYZ(self.rot.x, 0, self.rot.z)
+        # copy
         self.transform = self.rotation.copy().addDimension(1)
 
 
