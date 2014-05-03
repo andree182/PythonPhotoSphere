@@ -15,8 +15,6 @@ import PIL.Image as Image
 import urllib, cStringIO
 
 from vector import Vector
-from matrix import Matrix
-from matrix.rotation import RotationMatrix
 
 pi2 = 2.0 * pi
 
@@ -36,9 +34,7 @@ class Renderer(object):
     def __init__(self, width, height):
         self.size(width, height)
         self.initialized = False
-        self.rot = drug(x = pi * 0.5, z = 0)
-        self.rotation = RotationMatrix().rotateXYZ(self.rot.x, 0, self.rot.z)
-        self.transform = self.rotation.copy().addDimension(1)
+        self.rot = drug(x = 90, z = 0)
         v = Vector(width * 0.5, height * 0.5, 0)
         self.mouse = dict(
             left   = drug(pos = v,        pressed = False),
@@ -126,12 +122,12 @@ class Renderer(object):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         glDisable(GL_LIGHTING)
+        glDisable(GL_NORMALIZE)
         glDisable(GL_CULL_FACE)
         # ----
         glPushMatrix()
-        glMultMatrixf(self.transform.tuples())
-        #glMultMatrixf(numpy.matrix(self.transform.tuples(), 'f'))
-        glColor3f(1.0,0.75,0.75)
+        glRotatef(self.rot.x, 1, 0, 0)
+        glRotatef(self.rot.z, 0, 0, 1)
         glColor3f(*self.color)
         glEnable(GL_TEXTURE_2D)
         glBindTexture(GL_TEXTURE_2D, self.textures[0])
@@ -160,18 +156,14 @@ class Renderer(object):
 
     def onDrag(self, cursor_x, cursor_y):
         if self.mouse['left'].pressed:
-            self.rot.x += 0.001 * pi * (self.mouse['left'].pos.y - cursor_y)
-            self.rot.z += 0.002 * pi * (cursor_x - self.mouse['left'].pos.x)
+            self.rot.x += self.radius * 0.5 * (self.mouse['left'].pos.y - cursor_y)
+            self.rot.z += self.radius *       (cursor_x - self.mouse['left'].pos.x)
             self.mouse['left'].pos.set(cursor_x, cursor_y, 0)
-        # bounderies
-        if    self.rot.x < 0:   self.rot.x  = 0
-        if    self.rot.x > pi:  self.rot.x  = pi
-        while self.rot.z < 0:   self.rot.z += pi2
-        while self.rot.z > pi2: self.rot.z -= pi2
-        # calculate
-        self.rotation.reset().rotateXYZ(self.rot.x, 0, self.rot.z)
-        # copy
-        self.transform = self.rotation.copy().addDimension(1)
+            # bounderies
+            if    self.rot.x < 0:   self.rot.x  = 0
+            if    self.rot.x > 180: self.rot.x  = 180
+            while self.rot.z < 0:   self.rot.z += 360
+            while self.rot.z > 360: self.rot.z -= 360
 
 
 class Window(object):
