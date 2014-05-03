@@ -61,15 +61,13 @@ class Renderer(object):
             file = cStringIO.StringIO(urllib.urlopen(filename).read())
         im = Image.open(file)
         width, height = im.size
-        pixels = im.getdata()
         pixelData = im.load()
         rowSkip = int(height * self.pct.offset)
         curHeight = int(height * (1 + 2 * self.pct.offset))
         c = numpy.zeros(width * curHeight * 3, numpy.uint8)
         for hj in range(curHeight):
             j = hj - rowSkip
-            #if j in range(height):
-            if (j >= 0) and (j < height):
+            if j in range(height):
                 for i in range(width):
                     p = 3 * (hj * width + i)
                     d = pixelData[i,j]
@@ -79,7 +77,7 @@ class Renderer(object):
         self.tex.width = width
         self.tex.height = curHeight
         self.tex.data = c
-        #self.tex.data  = numpy.asarray(im, dtype = 'uint8')
+        #self.tex.data = numpy.asarray(im, dtype = 'uint8')
 
     def initialize(self):
         if self.initialized: return
@@ -89,7 +87,7 @@ class Renderer(object):
         glDepthFunc(GL_LEQUAL)
         glEnable(GL_DEPTH_TEST)
         glShadeModel(GL_FLAT)
-        #glShadeModel (GL_SMOOTH)
+        glShadeModel (GL_SMOOTH)
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
 
         self.quadratic = gluNewQuadric()
@@ -131,10 +129,7 @@ class Renderer(object):
         glRotatef(self.rot.x, 1, 0, 0)
         glRotatef(self.rot.z, 0, 0, 1)
         glColor3f(*self.color)
-        glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, self.textures[0])
         gluSphere(self.quadratic, self.radius, 50, 50)
-        glBindTexture(GL_TEXTURE_2D, 0)
         glPopMatrix()
         # ----
         glFlush()
