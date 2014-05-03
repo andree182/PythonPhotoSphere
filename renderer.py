@@ -47,6 +47,7 @@ class Renderer(object):
         self.tex = drug(width = 0, height = 0, data = 0)
         self.pct = drug(offset = 0.15)
         self.radius = 0.1
+        self.scale = 0.0 # actually the way towards the sphere surface
         self.depth = 1.0
 
     def size(self, width, height):
@@ -126,6 +127,7 @@ class Renderer(object):
         glDisable(GL_CULL_FACE)
         # ----
         glPushMatrix()
+        glTranslatef(0, 0, self.scale)
         glRotatef(self.rot.x, 1, 0, 0)
         glRotatef(self.rot.z, 0, 0, 1)
         glColor3f(*self.color)
@@ -147,12 +149,22 @@ class Renderer(object):
         elif button == GLUT_MIDDLE_BUTTON:
             b = 'middle'
         else: b = None
-        self.mouse[b].pos.set(cursor_x, cursor_y, 0)
-        # button state
-        if button_state == GLUT_UP:
-            self.mouse[b].pressed = False
-        elif button_state == GLUT_DOWN:
-            self.mouse[b].pressed = True
+        if b is not None:
+            self.mouse[b].pos.set(cursor_x, cursor_y, 0)
+            # button state
+            if button_state == GLUT_UP:
+                self.mouse[b].pressed = False
+            elif button_state == GLUT_DOWN:
+                self.mouse[b].pressed = True
+        elif button in [3, 4]: # wheel event
+            # button state
+            if button == 3:
+                self.scale += 0.001
+            elif button == 4:
+                self.scale -= 0.001
+            # bounderies
+            while self.scale < -self.radius: self.scale = -self.radius
+            while self.scale >  self.radius: self.scale =  self.radius
 
     def onDrag(self, cursor_x, cursor_y):
         if self.mouse['left'].pressed:
@@ -164,6 +176,12 @@ class Renderer(object):
             if    self.rot.x > 180: self.rot.x  = 180
             while self.rot.z < 0:   self.rot.z += 360
             while self.rot.z > 360: self.rot.z -= 360
+        if self.mouse['middle'].pressed:
+            self.scale += 0.002 * (self.mouse['middle'].pos.y - cursor_y)
+            self.mouse['middle'].pos.set(cursor_x, cursor_y, 0)
+            # bounderies
+            while self.scale < -self.radius: self.scale = -self.radius
+            while self.scale >  self.radius: self.scale =  self.radius
 
 
 class Window(object):
@@ -193,6 +211,8 @@ class Window(object):
         glLoadIdentity()
 
     def onKeyPressed(self, *keys):
+        if '0' in keys:
+            self.renderer.scale = 0.0
         if ESCAPE in keys or 'q' in keys:
             self.close()
 
