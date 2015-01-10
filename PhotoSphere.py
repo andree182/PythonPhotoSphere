@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import os
 import sys
 
@@ -59,8 +60,13 @@ def qtmain():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
-        fileUrl = "file://{0}".format(os.path.abspath(sys.argv[1]))
+    if len(sys.argv) > 1:
+        if os.path.isfile(sys.argv[1]):
+            fileUrl = "file://{0}".format(os.path.abspath(sys.argv[1]))
+        elif sys.argv[1].startswith("file:///"):
+            fileUrl = sys.argv[1]
+        else:
+            ret = qtmain()
         main()
         ret = 0
     else:
