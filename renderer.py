@@ -16,10 +16,7 @@ import urllib, cStringIO
 
 from vector import Vector
 
-# MAX_TEX_SIZE = 2048
-MAX_TEX_SIZE = 4096
 MAX_RADIUS_SCALE_RATIO = 0.9
-
 pi2 = 2.0 * pi
 
 # Some api in the chain is translating the keystrokes to this octal string
@@ -66,27 +63,12 @@ class Renderer(object):
             file = cStringIO.StringIO(urllib.urlopen(filename).read())
         im = Image.open(file)
         
-        if im.size[0] > MAX_TEX_SIZE or im.size[1] > MAX_TEX_SIZE:
-            m = max(im.size)
-            im = im.resize((im.size[0] * MAX_TEX_SIZE / m, im.size[1] * MAX_TEX_SIZE / m))
-            print("Warning: Too big image, resized to %dx%d" % im.size)
-
+        im.thumbnail((8192, 4096))
+        
         width, height = im.size
-        pixelData = im.load()
-        rowSkip = int(height * self.pct.offset)
-        curHeight = int(height * (1 + 2 * self.pct.offset))
-        c = numpy.zeros(width * curHeight * 3, numpy.uint8)
-        for hj in range(curHeight):
-            j = hj - rowSkip
-            if j in range(height):
-                for i in range(width):
-                    p = 3 * (hj * width + i)
-                    d = pixelData[i,j]
-                    c[p    ] = d[0]
-                    c[p + 1] = d[1]
-                    c[p + 2] = d[2]
+        c = numpy.asarray(im, numpy.uint8)
         self.tex.width = width
-        self.tex.height = curHeight
+        self.tex.height = height
         self.tex.data = c
         #self.tex.data = numpy.asarray(im, dtype = 'uint8')
 
