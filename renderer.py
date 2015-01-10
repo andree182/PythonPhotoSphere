@@ -16,6 +16,10 @@ import urllib, cStringIO
 
 from vector import Vector
 
+# MAX_TEX_SIZE = 2048
+MAX_TEX_SIZE = 4096
+MAX_RADIUS_SCALE_RATIO = 0.9
+
 pi2 = 2.0 * pi
 
 # Some api in the chain is translating the keystrokes to this octal string
@@ -48,6 +52,7 @@ class Renderer(object):
         self.pct = drug(offset = 0.15)
         self.radius = 0.1
         self.scale = 0.0 # actually the way towards the sphere surface
+        self.maxScale = self.radius * MAX_RADIUS_SCALE_RATIO
         self.depth = 1.0
 
     def size(self, width, height):
@@ -60,6 +65,12 @@ class Renderer(object):
         else:
             file = cStringIO.StringIO(urllib.urlopen(filename).read())
         im = Image.open(file)
+        
+        if im.size[0] > MAX_TEX_SIZE or im.size[1] > MAX_TEX_SIZE:
+            m = max(im.size)
+            im = im.resize((im.size[0] * MAX_TEX_SIZE / m, im.size[1] * MAX_TEX_SIZE / m))
+            print("Warning: Too big image, resized to %dx%d" % im.size)
+
         width, height = im.size
         pixelData = im.load()
         rowSkip = int(height * self.pct.offset)
@@ -166,18 +177,39 @@ class Renderer(object):
             self.rot.x += self.radius * 0.5 * (self.mouse['left'].pos.y - cursor_y)
             self.rot.z += self.radius *       (cursor_x - self.mouse['left'].pos.x)
             self.mouse['left'].pos.set(cursor_x, cursor_y, 0)
-            # bounderies
-            if    self.rot.x < 0:   self.rot.x  = 0
-            if    self.rot.x > 180: self.rot.x  = 180
-            while self.rot.z < 0:   self.rot.z += 360
-            while self.rot.z > 360: self.rot.z -= 360
+            self.clampRotation()
         if self.mouse['middle'].pressed:
             self.scale += 0.002 * (self.mouse['middle'].pos.y - cursor_y)
             self.mouse['middle'].pos.set(cursor_x, cursor_y, 0)
-            # bounderies
-            while self.scale < -self.radius: self.scale = -self.radius
-            while self.scale >  self.radius: self.scale =  self.radius
+            self.clampScale()
 
+    def onSpecial(self, f, x = 0, y = 0):
+        if f == GLUT_KEY_UP:
+            self.rot.x -= 10
+        if f == GLUT_KEY_DOWN:
+            self.rot.x += 10
+        if f == GLUT_KEY_LEFT:
+            self.rot.z += 10
+        if f == GLUT_KEY_RIGHT:
+            self.rot.z -= 10
+        if f == GLUT_KEY_PAGE_UP:
+            self.scale += 0.01
+        if f == GLUT_KEY_PAGE_DOWN:
+            self.scale -= 0.01
+        if f == GLUT_KEY_HOME:
+            self.scale - 1
+        self.clampRotation()
+        self.clampScale()
+            
+    def clampRotation(self):
+        if    self.rot.x < 0:   self.rot.x  = 0
+        if    self.rot.x > 180: self.rot.x  = 180
+        while self.rot.z < 0:   self.rot.z += 360
+        while self.rot.z > 360: self.rot.z -= 360
+
+    def clampScale(self):
+        if self.scale < -self.maxScale: self.scale = -self.maxScale
+        if self.scale >  self.maxScale: self.scale =  self.maxScale
 
 class Window(object):
 
@@ -208,6 +240,10 @@ class Window(object):
     def onKeyPressed(self, *keys):
         if '0' in keys:
             self.renderer.scale = 0.0
+        if '+' in keys:
+            self.renderer.onSpecial(GLUT_KEY_PAGE_UP)
+        if '-' in keys:
+            self.renderer.onSpecial(GLUT_KEY_PAGE_DOWN)
         if ESCAPE in keys or 'q' in keys:
             self.close()
 
@@ -225,6 +261,7 @@ class Window(object):
         glutIdleFunc(self.renderer.draw)
         glutReshapeFunc(self.resize)
         glutKeyboardFunc(self.onKeyPressed)
+        glutSpecialFunc(self.renderer.onSpecial)
         glutMouseFunc(self.renderer.onClick)
         glutMotionFunc(self.renderer.onDrag)
         try:
