@@ -10,7 +10,6 @@ from math import cos, sin, pi
 from traceback import print_exc
 
 import numpy
-import numpy.oldnumeric as Numeric
 import PIL.Image as Image
 import urllib, cStringIO
 
@@ -62,9 +61,9 @@ class Renderer(object):
         else:
             file = cStringIO.StringIO(urllib.urlopen(filename).read())
         im = Image.open(file)
-        
+
         im.thumbnail((8192, 4096))
-        
+
         width, height = im.size
         c = numpy.asarray(im, numpy.uint8)
         self.tex.width = width
@@ -182,7 +181,7 @@ class Renderer(object):
             self.scale - 1
         self.clampRotation()
         self.clampScale()
-            
+
     def clampRotation(self):
         if    self.rot.x < 0:   self.rot.x  = 0
         if    self.rot.x > 180: self.rot.x  = 180
